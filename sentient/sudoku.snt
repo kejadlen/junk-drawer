@@ -1,0 +1,59 @@
+array9<array9<int5>> X;
+
+X.each(function (row) {
+  row.each(function (cell) {
+    invariant cell.between?(1, 9);
+  });
+});
+
+function valid?(ary) {
+  invariant ary.uniq?;
+};
+
+boxes = [];
+[0, 3, 6].each(function^ (x) {
+  [0, 3, 6].each(function^ (y) {
+    boxes = boxes.push([
+      X[y  ][x], X[y  ][x+1], X[y  ][x+2],
+      X[y+1][x], X[y+1][x+1], X[y+1][x+2],
+      X[y+2][x], X[y+2][x+1], X[y+2][x+2]
+    ]);
+  });
+});
+
+X.each(*valid?);
+X.transpose.each(*valid?);
+boxes.each(*valid?);
+
+# Now the extras...
+
+# evens
+invariant X[0][3] % 2 == 0;
+invariant X[0][7] % 2 == 0;
+invariant X[2][1] % 2 == 0;
+invariant X[2][5] % 2 == 0;
+invariant X[4][3] % 2 == 0;
+invariant X[4][7] % 2 == 0;
+invariant X[6][1] % 2 == 0;
+invariant X[6][5] % 2 == 0;
+invariant X[8][3] % 2 == 0;
+
+invariant X[1][2] % 2 == 1;
+invariant X[1][6] % 2 == 1;
+invariant X[3][0] % 2 == 1;
+invariant X[3][4] % 2 == 1;
+invariant X[3][8] % 2 == 1;
+invariant X[5][2] % 2 == 1;
+invariant X[5][6] % 2 == 1;
+invariant X[7][0] % 2 == 1;
+invariant X[7][4] % 2 == 1;
+
+invariant X[0][5] + X[1][4] + X[2][3] + X[3][2] + X[4][1] + X[5][0]                     == 45;
+invariant X[1][0] + X[2][1] + X[3][2] + X[4][3] + X[5][4] + X[6][5] + X[7][6] + X[8][7] == 56;
+invariant X[3][0] + X[4][1] + X[5][2] + X[6][3] + X[7][4] + X[8][5]                     == 18;
+invariant X[0][6] + X[1][7] + X[2][8]                                                   == 11;
+invariant X[0][3] + X[1][4] + X[2][5] + X[3][5] + X[4][7] + X[5][8]                     == 24;
+invariant X[2][8] + X[3][7] + X[4][6] + X[5][5] + X[6][4] + X[7][3] + X[8][2]           == 25;
+invariant X[6][8] + X[7][7] + X[8][6]                                                   == 8;
+
+expose X;
