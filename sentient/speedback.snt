@@ -1,0 +1,20 @@
+array7<array8<int4>> X;
+
+X.each(function (row) {
+  row.each(function (cell) {
+    invariant cell.between?(0, 8);
+  });
+});
+
+invariant X.all?(*uniq?);
+X.transpose.all?(*uniq?);
+
+pairs = [];
+X.each(function^ (row) {
+  row.eachSlice(2, function^ (pair) {
+    pairs = pairs.push(pair);
+  });
+});
+invariant pairs.uniq?;
+
+expose X;
