@@ -1,13 +1,13 @@
 #!/usr/bin/env ruby
 
-# require "bundler/inline"
+require "bundler/inline"
 
-# gemfile do
-#   source "https://rubygems.org"
-#   gem "capybara"
-# end
-
-require "bundler/setup"
+gemfile do
+  source "https://rubygems.org"
+  gem "capybara"
+  gem "pry"
+  gem "selenium-webdriver"
+end
 
 def suppress_warnings
   original_verbosity = $VERBOSE
@@ -35,8 +35,18 @@ fill_in "username", with: ENV.fetch("PINBOARD_USERNAME")
 fill_in "password", with: ENV.fetch("PINBOARD_PASSWORD")
 click_button "log in"
 
+visit "https://pinboard.in/u:kejadlen/code:400"
+
+all(:xpath, "//a[@title='Click to re-crawl this link']").each do |link|
+  bookmark = link.find(:xpath, "../a[starts-with(@class, 'bookmark_title')]")
+  puts "Re-crawling #{bookmark.text}"
+  link.click
+end
+
 visit "https://pinboard.in/u:kejadlen/code:500"
 
 all(:xpath, "//a[@title='Click to re-crawl this link']").each do |link|
+  bookmark = link.find(:xpath, "../a[starts-with(@class, 'bookmark_title')]")
+  puts "Re-crawling #{bookmark.text}"
   link.click
 end
