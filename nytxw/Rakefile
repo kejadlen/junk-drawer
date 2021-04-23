@@ -30,8 +30,18 @@ namespace :crosswords do
     Rake::Task["sync:crosswords"].invoke("2014-05-18")
   end
 
-  crossword_jsons = FileList["#{CROSSWORDS_STORE}/*.json"]
-  file "#{CROSSWORDS_STORE}/crosswords.json" => crossword_jsons do |t|
+  CROSSWORDS_JSON = "#{CROSSWORDS_STORE}/crosswords.json"
+
+  desc "Output for Observable"
+  task :observable => CROSSWORDS_JSON do
+    puts JSON.dump(
+      JSON.parse(File.read(CROSSWORDS_JSON))
+        .select {|day| Date.parse(day.fetch("date")).year == Date.today.year }
+    )
+  end
+
+  crossword_jsons = FileList["#{CROSSWORDS_STORE}/*.json"].reject {|path| path =~ /crosswords.json/ }
+  file CROSSWORDS_JSON=> crossword_jsons do |t|
     data = crossword_jsons
       .map {|path| JSON.parse(File.read(path)) }
       .inject {|h, month_data| h.merge(month_data) }

@@ -17,7 +17,7 @@ module Crosswords
     end
 
     def last_date
-      path = Dir["#@base_dir/*.json"].sort.last
+      path = Dir["#@base_dir/*.json"].select {|path| path =~ /\d{4}-\d{2}.json/ }.sort.last
       return nil if path.nil?
 
       JSON.parse(File.read(path)).keys.map {|k| Date.parse(k) }.sort.last
