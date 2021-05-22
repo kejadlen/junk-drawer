@@ -127,6 +127,6 @@ s.check()
 m = s.model()
 
 for y in range(0, len(row_rules)):
-  row = "".join(["█" if m[cell(x,y)] else " " for x in range(0, len(col_rules))])
+  row = "".join([" " if m[cell(x,y)] else "█" for x in range(0, len(col_rules))])
   print(row)
 
