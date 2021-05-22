@@ -92,59 +92,36 @@ def row(y):
 def col(x):
   return [cell(x, y) for y in range(0, len(row_rules))]
 
+def create_constraints(stripe_name, stripe_constraints, stripe, f):
+  group_count = len(stripe_constraints)
+  group_start = [Int(f"{stripe_name}-{i}-start") for i in range(0, group_count)]
+  group_end = [Int(f"{stripe_name}-{i}-end") for i in range(0, group_count)]
+
+  # # Start and end of each group
+  for i in range(0, group_count):
+    s.add(group_start[i] >= 0, group_start[i] < len(stripe))
+    s.add(group_end[i] >= 0, group_end[i] < len(stripe))
+    s.add(group_end[i] - group_start[i] == stripe_constraints[i] - 1)
+
+  # Gap between each group and following group
+  for i, j in pairwise(range(0, group_count)):
+    s.add(group_start[j] >= group_end[i] + 2)
+
+  # Cells
+  for k in range(0, len(stripe)):
+    cell_in_specific_group = [
+        And(k >= group_start[i], k <= group_end[i])
+        for i in range(0, group_count)
+    ]
+    s.add(f(stripe[k], Or(*cell_in_specific_group)))
+
 s = Solver()
 
 for x, col_rule in enumerate(col_rules):
-  stripe_name = f"col-{x}"
-  stripe_constraints = col_rule
-  stripe = col(x)
-  group_count = len(stripe_constraints)
-  group_start = [Int(f"{stripe_name}-{i}-start") for i in range(0, group_count)]
-  group_end = [Int(f"{stripe_name}-{i}-end") for i in range(0, group_count)]
-
-  # # Start and end of each group
-  for i in range(0, group_count):
-    s.add(group_start[i] >= 0, group_start[i] < len(stripe))
-    s.add(group_end[i] >= 0, group_end[i] < len(stripe))
-    s.add(group_end[i] - group_start[i] == stripe_constraints[i] - 1)
-
-  # Gap between each group and following group
-  for i, j in pairwise(range(0, group_count)):
-    s.add(group_start[j] >= group_end[i] + 2)
-
-  # Cells
-  for k in range(0, len(stripe)):
-    cell_in_specific_group = [
-        And(k >= group_start[i], k <= group_end[i])
-        for i in range(0, group_count)
-    ]
-    s.add(stripe[k] == Or(*cell_in_specific_group))
+  create_constraints(f"col-{x}", col_rule, col(x), lambda a,b: a == b)
 
 for y, row_rule in enumerate(row_rules):
-  stripe_name = f"row-{y}"
-  stripe_constraints = row_rule
-  stripe = row(y)
-  group_count = len(stripe_constraints)
-  group_start = [Int(f"{stripe_name}-{i}-start") for i in range(0, group_count)]
-  group_end = [Int(f"{stripe_name}-{i}-end") for i in range(0, group_count)]
-
-  # # Start and end of each group
-  for i in range(0, group_count):
-    s.add(group_start[i] >= 0, group_start[i] < len(stripe))
-    s.add(group_end[i] >= 0, group_end[i] < len(stripe))
-    s.add(group_end[i] - group_start[i] == stripe_constraints[i] - 1)
-
-  # Gap between each group and following group
-  for i, j in pairwise(range(0, group_count)):
-    s.add(group_start[j] >= group_end[i] + 2)
-
-  # Cells
-  for k in range(0, len(stripe)):
-    cell_in_specific_group = [
-        And(k >= group_start[i], k <= group_end[i])
-        for i in range(0, group_count)
-    ]
-    s.add(stripe[k] == Not(Or(*cell_in_specific_group)))
+  create_constraints(f"row-{y}", row_rule, row(y), lambda a,b: a != b)
 
 s.check()
 m = s.model()
