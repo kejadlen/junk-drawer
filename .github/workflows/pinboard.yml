@@ -1,0 +1,20 @@
+name: refresh-pinboard-errors
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+    
+jobs:
+  refresh-pinboard-errors:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3
+      - uses: actions/checkout@v2
+      - run: ruby refresh-pinboard-errors.rb
+        working-directory: ./pinboard
+        env:
+          PINBOARD_USERNAME: ${{ secrets.PINBOARD_USERNAME }}
+          PINBOARD_PASSWORD: ${{ secrets.PINBOARD_PASSWORD }}
