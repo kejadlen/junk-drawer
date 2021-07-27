@@ -3,6 +3,7 @@ name: refresh-pinboard-errors
 on:
   schedule:
     - cron: "0 0 * * *"
+  workflow_dispatch:
     
 jobs:
   refresh-pinboard-errors:
