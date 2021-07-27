@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: 3
+          ruby-version: 2.7
       - uses: actions/checkout@v2
       - run: ruby refresh-pinboard-errors.rb
         working-directory: ./pinboard
