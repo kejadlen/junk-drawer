@@ -17,10 +17,18 @@ def suppress_warnings
 end
 
 require "capybara"
-Capybara.default_driver = :selenium
-
 require "selenium/webdriver"
-Selenium::WebDriver::Firefox::Binary.path = "/Applications/Firefox\ Developer\ Edition.app/Contents/MacOS/firefox"
+
+remote_host = ENV.fetch("REMOTE_SELENIUM_HOST", "localhost:4444")
+Capybara.register_driver :remote do |app|
+  Capybara::Selenium::Driver.new(
+    app,
+    browser: :remote,
+    url: "http://localhost:4444/wd/hub",
+    desired_capabilities: :firefox,
+  )
+end
+Capybara.default_driver = :remote
 
 require "capybara/dsl"
 suppress_warnings do

@@ -4,10 +4,16 @@ on:
   # schedule:
   #   - cron: "0 0 * * *"
   workflow_dispatch:
-    
+
 jobs:
   refresh-pinboard-errors:
     runs-on: ubuntu-latest
+
+    services:
+      selenium:
+        image: selenium/standalone-firefox
+        ports:
+          - 4444:4444
 
     steps:
       - uses: ruby/setup-ruby@v1
@@ -19,3 +25,5 @@ jobs:
         env:
           PINBOARD_USERNAME: ${{ secrets.PINBOARD_USERNAME }}
           PINBOARD_PASSWORD: ${{ secrets.PINBOARD_PASSWORD }}
+          REMOTE_SELENIUM_HOST: selenium
+
