@@ -19,12 +19,11 @@ end
 require "capybara"
 require "selenium/webdriver"
 
-remote_host = ENV.fetch("REMOTE_SELENIUM_HOST", "localhost:4444")
 Capybara.register_driver :remote do |app|
   Capybara::Selenium::Driver.new(
     app,
     browser: :remote,
-    url: "http://#{remote_host}:4444/wd/hub",
+    url: "http://localhost:4444/wd/hub",
     desired_capabilities: :firefox,
   )
 end
