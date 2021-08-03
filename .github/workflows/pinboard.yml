@@ -25,5 +25,3 @@ jobs:
         env:
           PINBOARD_USERNAME: ${{ secrets.PINBOARD_USERNAME }}
           PINBOARD_PASSWORD: ${{ secrets.PINBOARD_PASSWORD }}
-          REMOTE_SELENIUM_HOST: selenium
-

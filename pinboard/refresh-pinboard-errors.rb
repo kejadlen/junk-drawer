@@ -19,15 +19,20 @@ end
 require "capybara"
 require "selenium/webdriver"
 
-Capybara.register_driver :remote do |app|
-  Capybara::Selenium::Driver.new(
-    app,
-    browser: :remote,
-    url: "http://localhost:4444/wd/hub",
-    desired_capabilities: :firefox,
-  )
+if ENV.has_key?("CI")
+  Capybara.register_driver :remote do |app|
+    Capybara::Selenium::Driver.new(
+      app,
+      browser: :remote,
+      url: "http://localhost:4444/wd/hub",
+      desired_capabilities: :firefox,
+    )
+  end
+  Capybara.default_driver = :remote
+else
+  Selenium::WebDriver::Firefox::Binary.path = "/Applications/Firefox\ Developer\ Edition.app/Contents/MacOS/firefox"
+  Capybara.default_driver = :selenium
 end
-Capybara.default_driver = :remote
 
 require "capybara/dsl"
 suppress_warnings do
