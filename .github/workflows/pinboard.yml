@@ -18,7 +18,7 @@ jobs:
     steps:
       - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: 2.7
+          ruby-version: 3.1
       - uses: actions/checkout@v2
       - run: ruby refresh-pinboard-errors.rb
         working-directory: ./pinboard

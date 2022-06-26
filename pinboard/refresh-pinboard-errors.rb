@@ -6,7 +6,8 @@ gemfile do
   source "https://rubygems.org"
   gem "capybara"
   gem "pry"
-  gem "selenium-webdriver"
+  # gem "selenium-webdriver"
+  gem "cuprite"
 end
 
 def suppress_warnings
@@ -16,23 +17,12 @@ def suppress_warnings
   $VERBOSE = original_verbosity
 end
 
-require "capybara"
-require "selenium/webdriver"
+require "capybara/cuprite"
 
-if ENV.has_key?("CI")
-  Capybara.register_driver :remote do |app|
-    Capybara::Selenium::Driver.new(
-      app,
-      browser: :remote,
-      url: "http://localhost:4444/wd/hub",
-      desired_capabilities: :firefox,
-    )
-  end
-  Capybara.default_driver = :remote
-else
-  Selenium::WebDriver::Firefox::Binary.path = "/Applications/Firefox\ Developer\ Edition.app/Contents/MacOS/firefox"
-  Capybara.default_driver = :selenium
+Capybara.register_driver(:cuprite) do |app|
+  Capybara::Cuprite::Driver.new(app)
 end
+Capybara.default_driver = :cuprite
 
 require "capybara/dsl"
 suppress_warnings do
