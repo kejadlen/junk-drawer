@@ -9,17 +9,22 @@ jobs:
   refresh-pinboard-errors:
     runs-on: ubuntu-latest
 
-    services:
-      selenium:
-        image: selenium/standalone-firefox
-        ports:
-          - 4444:4444
+    defaults:
+      run:
+        working-directory: ./pinboard
+
+    # services:
+    #   selenium:
+    #     image: selenium/standalone-firefox
+    #     ports:
+    #       - 4444:4444
 
     steps:
       - uses: actions/checkout@v3
       - uses: ruby/setup-ruby@v1
+        with:
+          working-directory: ./pinboard
       - run: ruby refresh-pinboard-errors.rb
-        working-directory: ./pinboard
         env:
           PINBOARD_USERNAME: ${{ secrets.PINBOARD_USERNAME }}
           PINBOARD_PASSWORD: ${{ secrets.PINBOARD_PASSWORD }}
