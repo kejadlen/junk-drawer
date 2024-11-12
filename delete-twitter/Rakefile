@@ -1,0 +1,104 @@
+require "json"
+require "net/http"
+require "pstore"
+
+TWITTER_ARCHIVE = ENV.fetch("TWITTER_ARCHIVE")
+
+file "tweets.store" do
+  json = File.read("#{TWITTER_ARCHIVE}/data/tweets.js").sub(/^window.YTD.tweets.part0 = /,"")
+  tweets = JSON.load(json)
+
+  store = PStore.new("tweets.store")
+  store.transaction do
+    tweets.each do |tweet|
+      store[tweet.fetch("tweet").fetch("id_str")] = { is_deleted: false }
+    end
+  end
+end
+
+file "following.store" do
+  json = File.read("#{TWITTER_ARCHIVE}/data/following.js").sub(/^window.YTD.following.part0 = /,"")
+  followings = JSON.load(json)
+
+  store = PStore.new("following.store")
+  store.transaction do
+    followings.each do |following|
+      store[following.fetch("following").fetch("accountId")] = { is_deleted: false }
+    end
+  end
+end
+
+def delete_tweet(id)
+  uri = URI("https://twitter.com/i/api/graphql/VaenaVgh5q5ih7kvyVjgtg/DeleteTweet")
+  headers = ENV.fetch("XITTER_DELETE_TWEET_HEADERS").lines(chomp: true).to_h { _1.split(": ", 2) }
+  data = JSON.dump({
+    variables: {
+      tweet_id:,
+      dark_request: false,
+    },
+    queryId: "VaenaVgh5q5ih7kvyVjgtg",
+  })
+  Net::HTTP.post(uri, data, headers)
+end
+
+def unfollow(id)
+  uri = URI("https://x.com/i/api/1.1/friendships/destroy.json")
+  headers = ENV.fetch("XITTER_UNFOLLOW_HEADERS").scan(/((?~')): ((?~'))/).to_h
+  Net::HTTP.post(uri, <<~DATA.lines(chomp: true).join(?&), headers)
+    include_profile_interstitial_type=1
+    include_blocking=1
+    include_blocked_by=1
+    include_followed_by=1
+    include_want_retweets=1
+    include_mute_edge=1
+    include_can_dm=1
+    include_can_media_tag=1
+    include_ext_is_blue_verified=1
+    include_ext_verified_type=1
+    include_ext_profile_image_shape=1
+    skip_status=1
+    user_id=#{id}
+  DATA
+end
+
+task delete_tweets: "tweets.store" do
+  store = PStore.new("tweets.store")
+  keys = store.transaction do
+    store.keys.reject {|tweet_id| store[tweet_id].fetch(:is_deleted) }
+  end
+  p "deleting #{keys.length} tweets"
+
+  keys.each do |tweet_id|
+    p "deleting #{tweet_id}"
+    resp = delete_tweet(tweet_id)
+    if resp.code == "200"
+      store.transaction do
+        store[tweet_id] = { is_deleted: true }
+      end
+    else
+      p "error deleting #{tweet_id}"
+    end
+  end
+end
+
+task unfollow: "following.store" do
+  store = PStore.new("following.store")
+  keys = store.transaction do
+    store.keys.reject {|account_id| store[account_id].fetch(:is_deleted) }
+  end
+  p "unfollowing #{keys.length} users"
+
+  keys.each do |account_id|
+    p "unfollowing #{account_id}"
+    resp = unfollow(account_id)
+    if resp.code == "200"
+      store.transaction do
+        store[account_id] = { is_deleted: true }
+      end
+    else
+      p "error unfollowing #{account_id}: #{resp.body}"
+    end
+  end
+end
+
+task default: %i[ delete_tweets unfollow ]
