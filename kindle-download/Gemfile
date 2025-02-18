@@ -1,0 +1,9 @@
+# frozen_string_literal: true
+
+source "https://rubygems.org"
+
+gem "capybara"
+gem "cuprite", "~> 0.15"
+gem "debug"
+gem "ferrum"
+gem "logger"
